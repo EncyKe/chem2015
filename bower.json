@@ -1,0 +1,21 @@
+{
+  "name": "chem2015",
+  "version": "0.0.0",
+  "homepage": "https://github.com/yangfch3/chem2015",
+  "authors": [
+    "yangfch3 <yangfch3@gmail.com>"
+  ],
+  "description": "chem new website!",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "3rd",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "jquery": "~2.1.4"
+  }
+}
