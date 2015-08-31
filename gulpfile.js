@@ -18,8 +18,6 @@ var gulp = require("gulp"),
     cache = require('gulp-cache'),
     //livereload
     connect = require('gulp-connect'),
-    //browser-sync
-    browserSync = require('browser-sync').create(),
     //版本号控制
     rev = require('gulp-rev'),
     revReplace = require('gulp-rev-replace'),
@@ -38,6 +36,9 @@ gulp.task('connect',function(){
     })
 });
 
+/*
+browser-sync,用于响应式调试
+*/
 gulp.task('browser-sync', function() {
     browserSync.init({
         server: {
@@ -46,10 +47,11 @@ gulp.task('browser-sync', function() {
     });
 });
 
+
 /**
  * compass
  */
-gulp.task('css',['clean'], function() {
+gulp.task('css', function() {
   gulp.src('./src/sass/*.scss')
   .pipe(compass({
     css: 'src/css',
@@ -66,6 +68,12 @@ gulp.task('css',['clean'], function() {
   .pipe(minifyCSS())
   .pipe(rename({suffix: '.min'}))
   .pipe(gulp.dest('./src/css/'))
+ // .pipe(rev())
+ // .pipe(gulp.dest('./dist/css/'))
+ // .pipe(rev.manifest({
+ //       base:'dist',
+ //       merge:true
+ // }))
   .pipe(gulp.dest('./dist/css/'))
   .pipe(connect.reload());
 });
@@ -76,21 +84,19 @@ gulp.task('clean', function() {
       .pipe(clean());
 });
 
-// 语法检查：请利用编辑器的语法检查
-// gulp.task('jshint', function () {
-//     return gulp.src('src/scripts/*.js')
-//         .pipe(jshint())
-//         .pipe(jshint.reporter('default'));
-// });
+// 语法检查
+gulp.task('jshint', function () {
+    return gulp.src('src/scripts/*.js')
+        .pipe(jshint())
+        .pipe(jshint.reporter('default'));
+});
 
-gulp.task('js',['clean'] ,function (){
+gulp.task('js', function (){
    // return gulp.src(['src/3rd/jQuery/dist/jquery.min.js','src/scripts/common.js','src/scripts/app.js'])
     return gulp.src([
-        //'src/scripts/slider.js',
-        //填入要合并的JS
-        'src/scripts/slider.js'
+        'src/scripts/slider.js',
     ])
-        .pipe(concat('chem.js'))
+        .pipe(concat('chemNew.js'))
         .pipe(gulp.dest('dist/scripts'))
         .pipe(uglify())
         .pipe(rename({suffix: '.min'}))
@@ -105,7 +111,7 @@ gulp.task('js',['clean'] ,function (){
 });
 
 //html
-gulp.task('html',['css','js','clean'],function() {
+gulp.task('html',['css','js'],function() {
  // var opts = {
  //   conditionals: true,
  //   spare:true
@@ -114,16 +120,17 @@ gulp.task('html',['css','js','clean'],function() {
   var jsFilter = filter('**/*.js');
 
   return gulp.src("src/html/*.html")
+      // 引入html的include组件：<!--include "../?.html"-->
       .pipe(contentIncluder({
           includerReg:/<!\-\-include\s+"([^"]+)"\-\->/g
       }))
-      //tpl 替换
+      // 将html文件中的<%= root %>替换为../
       .pipe(tpl({
           root:'../'
       }))
       //rev
       //.pipe(revReplace({manifest:manifest}))
-      //js
+//      //js
       .pipe(jsFilter)
       .pipe(uglify())
       .pipe(jsFilter.restore())
@@ -136,7 +143,7 @@ gulp.task('html',['css','js','clean'],function() {
 });
 
 //图片压缩
-gulp.task('images',['clean'],function() {  
+gulp.task('images', function() {  
   return gulp.src(['src/images/**/*'])
     .pipe(gulp.dest('dist/images/'))
     .pipe(connect.reload());
@@ -147,12 +154,12 @@ gulp.task('images',['clean'],function() {
 //watch
 gulp.task('watch', function() {
     gulp.watch('src/sass/**/*.scss', ['css']);
-    gulp.watch('src/scripts/**/*.js', ['js']);
+    gulp.watch('src/scripts/**/*.js', ['jshint','js']);
     gulp.watch('src/html/**/*.html',['html']);
     gulp.watch('src/images/**/*',['images']);
 });
 
 //build
-gulp.task('build',['clean','css','js','images','html']);
-gulp.task('default', ['clean','build','connect','watch']);
+gulp.task('build',['css','js','html','images']);
+gulp.task('default', ['connect','build','watch']);
 gulp.task('server',['connect','watch']);

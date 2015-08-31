@@ -1,3 +1,7 @@
-.test{
-	width:100%;
-}
+@import "init/init";
+
+@import "icon/icon";
+
+@import "mixin/mixin";
+
+@import "app/app";
